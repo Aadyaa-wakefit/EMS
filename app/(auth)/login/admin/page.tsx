@@ -1,5 +1,5 @@
 // app/admin/page.jsx
-import HeroSection from "../../components/HeroSection";
+import HeroSection from "../../../components/HeroSection";
 import Link from "next/link";
 
 export default function AdminPage() {
