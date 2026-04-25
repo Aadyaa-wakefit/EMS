@@ -1,16 +1,16 @@
 "use client"
 
-import HeroSection from "../../components/HeroSection"
+import HeroSection from "@/app/components/HeroSection"
 import Link from "next/link"
-import { signIn } from "@/app/lib/auth-client";
+import { signIn } from "@/app/lib/auth-client"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
-export default function AdminPage() {
+export default function EmployeePage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,8 +28,8 @@ export default function AdminPage() {
         return
       }
 
-      // ✅ redirect after successful login
-      router.push("/dashboard")
+      // ✅ redirect to employee dashboard
+      router.push("/employee/dashboard")
     } catch (err) {
       console.error(err)
       alert("Something went wrong")
@@ -56,11 +56,11 @@ export default function AdminPage() {
 
           {/* Heading */}
           <h1 className="mt-6 text-4xl font-bold text-gray-900">
-            Admin Portal
+            Employee Portal
           </h1>
 
           <p className="mt-2 text-gray-500">
-            Sign in to manage the organization
+            Sign in to access your dashboard
           </p>
 
           {/* ✅ Form wired */}
@@ -72,7 +72,7 @@ export default function AdminPage() {
               </label>
               <input
                 type="email"
-                placeholder="john@example.com"
+                placeholder="employee@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

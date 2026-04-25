@@ -1,10 +1,12 @@
+
 "use client"
 
-import HeroSection from "../../components/HeroSection"
+import HeroSection from "@/app/components/HeroSection"
 import Link from "next/link"
-import { signIn } from "@/app/lib/auth-client";
+import { signIn } from "@/app/lib/auth-client"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+
 
 export default function AdminPage() {
   const [email, setEmail] = useState("")
