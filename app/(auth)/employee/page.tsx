@@ -1,8 +1,43 @@
-// app/(auth)/employee/page.tsx
-import HeroSection from "../../components/HeroSection";
-import Link from "next/link";
+"use client"
+
+import HeroSection from "../../components/HeroSection"
+import Link from "next/link"
+import { signIn } from "@/app/lib/auth-client"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 export default function EmployeePage() {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      const res = await signIn.email({
+        email,
+        password,
+      })
+
+      if (res.error) {
+        alert(res.error.message)
+        setLoading(false)
+        return
+      }
+
+      // ✅ redirect to employee dashboard
+      router.push("/employee/dashboard")
+    } catch (err) {
+      console.error(err)
+      alert("Something went wrong")
+    }
+
+    setLoading(false)
+  }
+
   return (
     <main className="min-h-screen grid grid-cols-1 md:grid-cols-2">
       {/* Left Side */}
@@ -28,8 +63,8 @@ export default function EmployeePage() {
             Sign in to access your dashboard
           </p>
 
-          {/* Form */}
-          <form className="mt-8 space-y-5">
+          {/* ✅ Form wired */}
+          <form onSubmit={handleLogin} className="mt-8 space-y-5">
             {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -38,6 +73,9 @@ export default function EmployeePage() {
               <input
                 type="email"
                 placeholder="employee@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 className="w-full rounded-lg border border-gray-200 px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
@@ -50,6 +88,9 @@ export default function EmployeePage() {
               <input
                 type="password"
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 className="w-full rounded-lg border border-gray-200 px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
@@ -57,13 +98,14 @@ export default function EmployeePage() {
             {/* Button */}
             <button
               type="submit"
-              className="w-full rounded-lg bg-gradient-to-r from-indigo-600 to-purple-500 text-white py-3 font-medium hover:opacity-90 transition"
+              disabled={loading}
+              className="w-full rounded-lg bg-gradient-to-r from-indigo-600 to-purple-500 text-white py-3 font-medium hover:opacity-90 transition disabled:opacity-50"
             >
-              Sign In
+              {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
         </div>
       </section>
     </main>
-  );
+  )
 }
