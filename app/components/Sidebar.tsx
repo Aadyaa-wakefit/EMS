@@ -6,7 +6,6 @@ import {
   CalendarDays,
   LayoutDashboard,
   LogOut,
-  Settings,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -40,11 +39,9 @@ type NavLink = {
 const ADMIN_LINKS: NavLink[] = [
   { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { title: "Leaves", href: "/leaves", icon: CalendarDays },
-  { title: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 const EMPLOYEE_LINKS: NavLink[] = [
-  { title: "Dashboard", href: "/employee", icon: LayoutDashboard },
   { title: "Leaves", href: "/leaves", icon: CalendarDays },
 ];
 

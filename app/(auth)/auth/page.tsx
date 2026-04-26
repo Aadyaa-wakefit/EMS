@@ -11,7 +11,7 @@ type Mode = "signin" | "signup"
 const MIN_PASSWORD_LENGTH = 8
 
 function destinationForRole(role: unknown): string {
-  return role === "admin" ? "/admin" : "/employee"
+  return role === "admin" ? "/admin" : "/leaves"
 }
 
 export default function AuthPage() {

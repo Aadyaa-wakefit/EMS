@@ -1,7 +1,47 @@
 import { pool } from "@/app/lib/db";
-import type { LeaveType } from "@/app/lib/leaves-shared";
+import {
+  DEFAULT_LEAVE_ALLOCATIONS,
+  LEAVE_TYPES,
+  type LeaveType,
+} from "@/app/lib/leaves-shared";
 
 export type UserRole = "admin" | "employee";
+
+export async function ensureUserBalances(userId: string): Promise<void> {
+  await pool.query(
+    `insert into leave_balances (user_id, leave_type, allocated, used)
+     values
+       ($1, 'sick', $2, 0),
+       ($1, 'casual', $3, 0),
+       ($1, 'vacation', $4, 0)
+     on conflict (user_id, leave_type) do nothing`,
+    [
+      userId,
+      DEFAULT_LEAVE_ALLOCATIONS.sick,
+      DEFAULT_LEAVE_ALLOCATIONS.casual,
+      DEFAULT_LEAVE_ALLOCATIONS.vacation,
+    ],
+  );
+}
+
+export async function ensureAllUserBalances(): Promise<void> {
+  await pool.query(
+    `insert into leave_balances (user_id, leave_type, allocated, used)
+     select u.id, t.leave_type, t.allocated, 0
+     from "user" u
+     cross join (values
+       ('sick'::text,    $1::int),
+       ('casual'::text,  $2::int),
+       ('vacation'::text,$3::int)
+     ) as t(leave_type, allocated)
+     on conflict (user_id, leave_type) do nothing`,
+    [
+      DEFAULT_LEAVE_ALLOCATIONS.sick,
+      DEFAULT_LEAVE_ALLOCATIONS.casual,
+      DEFAULT_LEAVE_ALLOCATIONS.vacation,
+    ],
+  );
+}
 
 export type BalanceCell = {
   allocated: number;
@@ -80,6 +120,8 @@ export async function listEmployeesWithBalances({
   lt,
   limit = 200,
 }: ListEmployeesArgs = {}): Promise<EmployeeRow[]> {
+  await ensureAllUserBalances();
+
   const values: unknown[] = [];
   const filters: string[] = [];
 
@@ -156,4 +198,74 @@ export async function setUserRole(args: {
      where id = $2`,
     [args.role, args.userId],
   );
+}
+
+export type SetLeaveAllocationArgs = {
+  userId: string;
+  leaveType: LeaveType;
+  allocated: number;
+};
+
+export type SetLeaveAllocationResult = {
+  allocated: number;
+  used: number;
+  remaining: number;
+};
+
+export async function setLeaveAllocation({
+  userId,
+  leaveType,
+  allocated,
+}: SetLeaveAllocationArgs): Promise<SetLeaveAllocationResult> {
+  if (!Number.isInteger(allocated) || allocated < 0) {
+    throw new Error("Allocation must be a non-negative integer");
+  }
+  if (!LEAVE_TYPES.includes(leaveType)) {
+    throw new Error(`Unknown leave type: ${leaveType}`);
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("begin");
+
+    const lock = await client.query<{ used: number }>(
+      `select used from leave_balances
+       where user_id = $1 and leave_type = $2
+       for update`,
+      [userId, leaveType],
+    );
+
+    const used = lock.rows[0]?.used ?? 0;
+    if (allocated < used) {
+      throw new Error(
+        `Allocation (${allocated}) cannot be lower than days already used (${used}).`,
+      );
+    }
+
+    const upsert = await client.query<{
+      allocated: number;
+      used: number;
+    }>(
+      `insert into leave_balances (user_id, leave_type, allocated, used, updated_at)
+       values ($1, $2, $3, 0, now())
+       on conflict (user_id, leave_type)
+       do update set allocated = excluded.allocated, updated_at = now()
+       returning allocated, used`,
+      [userId, leaveType, allocated],
+    );
+
+    await client.query("commit");
+
+    const row = upsert.rows[0]!;
+    return {
+      allocated: row.allocated,
+      used: row.used,
+      remaining: row.allocated - row.used,
+    };
+  } catch (err) {
+    await client.query("rollback").catch(() => {});
+    throw err;
+  } finally {
+    client.release();
+  }
 }

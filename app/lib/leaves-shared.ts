@@ -16,6 +16,12 @@ export const LEAVE_STATUS_LABELS: Record<LeaveStatus, string> = {
   rejected: "Rejected",
 };
 
+export const DEFAULT_LEAVE_ALLOCATIONS: Record<LeaveType, number> = {
+  sick: 8,
+  casual: 6,
+  vacation: 12,
+};
+
 export function isLeaveType(value: unknown): value is LeaveType {
   return (
     typeof value === "string" &&
