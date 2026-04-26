@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { dash } from "@better-auth/infra";
 import { pool } from "@/app/lib/db";
+import { ensureUserBalances } from "@/app/lib/users-repo";
 
 let cachedAuth: ReturnType<typeof buildAuth> | undefined;
 
@@ -50,15 +51,7 @@ function buildAuth() {
         create: {
           after: async (user) => {
             try {
-              await pool.query(
-                `insert into leave_balances (user_id, leave_type, allocated, used)
-                 values
-                   ($1, 'sick', 8, 0),
-                   ($1, 'casual', 6, 0),
-                   ($1, 'vacation', 12, 0)
-                 on conflict (user_id, leave_type) do nothing`,
-                [user.id],
-              );
+              await ensureUserBalances(user.id);
             } catch (err) {
               console.error("Failed to seed leave balances for new user", {
                 userId: user.id,

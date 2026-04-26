@@ -1,6 +1,7 @@
 import { pool } from "@/app/lib/db";
 import { LEAVE_TYPES } from "@/app/lib/leaves-shared";
 import type { LeaveStatus, LeaveType } from "@/app/lib/leaves-shared";
+import { ensureUserBalances } from "@/app/lib/users-repo";
 
 export type { LeaveStatus, LeaveType };
 
@@ -103,6 +104,7 @@ export async function getLeaveById(
 export async function getBalances(
   userId: string,
 ): Promise<LeaveBalanceRow[]> {
+  await ensureUserBalances(userId);
   const result = await pool.query<LeaveBalanceRow>(
     `select
        leave_type as "leaveType",
