@@ -9,17 +9,14 @@
     "lint": "eslint"
   },
   "dependencies": {
-<<<<<<< HEAD
+    "@better-auth/infra": "^0.2.5",
     "better-auth": "^1.6.9",
-    "next": "16.2.4",
-    "pg": "^8.20.0",
-=======
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.11.0",
     "next": "16.2.4",
+    "pg": "^8.20.0",
     "radix-ui": "^1.4.3",
->>>>>>> 466b8ca45360ed89c79c0f6310afa2ebc6057fdb
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "shadcn": "^4.4.0",
