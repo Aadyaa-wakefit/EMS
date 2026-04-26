@@ -37,10 +37,15 @@ export function LeaveDecisionForm({
   }
 
   return (
-    <div className="flex items-center justify-end gap-1.5">
+    <div className="flex items-center justify-end gap-1">
       <form action={approveLeaveAction}>
         <input type="hidden" name="id" value={id} />
-        <Button type="submit" size="sm" variant="outline" className="gap-1">
+        <Button
+          type="submit"
+          size="sm"
+          variant="outline"
+          className="h-8 gap-1 px-2.5"
+        >
           <Check className="size-3.5" /> Approve
         </Button>
       </form>
@@ -50,7 +55,7 @@ export function LeaveDecisionForm({
           type="submit"
           size="sm"
           variant="destructive"
-          className="gap-1"
+          className="h-8 gap-1 px-2.5"
         >
           <X className="size-3.5" /> Reject
         </Button>

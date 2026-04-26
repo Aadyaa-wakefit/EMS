@@ -45,6 +45,30 @@ function buildAuth() {
         },
       },
     },
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (user) => {
+            try {
+              await pool.query(
+                `insert into leave_balances (user_id, leave_type, allocated, used)
+                 values
+                   ($1, 'sick', 8, 0),
+                   ($1, 'casual', 6, 0),
+                   ($1, 'vacation', 12, 0)
+                 on conflict (user_id, leave_type) do nothing`,
+                [user.id],
+              );
+            } catch (err) {
+              console.error("Failed to seed leave balances for new user", {
+                userId: user.id,
+                error: err,
+              });
+            }
+          },
+        },
+      },
+    },
     plugins: [
       dash(),
       nextCookies(),

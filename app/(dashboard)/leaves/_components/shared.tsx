@@ -12,14 +12,32 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 });
 
+const DATE_NO_YEAR_FORMATTER = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+});
+
+function toDate(value: string | Date): Date {
+  return value instanceof Date ? value : new Date(`${value}T00:00:00`);
+}
+
 export function formatDate(value: string | Date): string {
-  const date = value instanceof Date ? value : new Date(`${value}T00:00:00`);
-  return DATE_FORMATTER.format(date);
+  return DATE_FORMATTER.format(toDate(value));
 }
 
 export function formatRange(start: string, end: string): string {
   if (start === end) return formatDate(start);
   return `${formatDate(start)} – ${formatDate(end)}`;
+}
+
+export function formatRangeCompact(start: string, end: string): string {
+  if (start === end) return formatDate(start);
+  const startDate = toDate(start);
+  const endDate = toDate(end);
+  if (startDate.getFullYear() === endDate.getFullYear()) {
+    return `${DATE_NO_YEAR_FORMATTER.format(startDate)} – ${formatDate(endDate)}`;
+  }
+  return `${formatDate(startDate)} – ${formatDate(endDate)}`;
 }
 
 export function dayCountInclusive(start: string, end: string): number {

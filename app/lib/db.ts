@@ -6,6 +6,10 @@ if (!databaseUrl) {
   throw new Error("Missing DATABASE_URL environment variable")
 }
 
+const parsedUrl = new URL(databaseUrl)
+parsedUrl.searchParams.delete("sslmode")
+
 export const pool = new Pool({
-  connectionString: databaseUrl
+  connectionString: parsedUrl.toString(),
+  ssl: { rejectUnauthorized: true },
 })

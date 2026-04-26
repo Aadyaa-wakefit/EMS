@@ -30,8 +30,9 @@ import { LeaveDecisionForm } from "@/app/(dashboard)/leaves/_components/LeaveDec
 import {
   StatusBadge,
   formatDate,
-  formatRange,
+  formatRangeCompact,
   cn,
+  formatRange,
 } from "./_components/shared";
 
 const STATUS_FILTERS: { value: "all" | LeaveStatus; label: string }[] = [
@@ -92,7 +93,7 @@ export default async function LeavesPage({
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
@@ -142,7 +143,14 @@ export default async function LeavesPage({
         })}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div
+        className={cn(
+          "grid gap-6 lg:items-start",
+          isAdmin
+            ? "lg:grid-cols-[minmax(0,1fr)_280px]"
+            : "lg:grid-cols-[minmax(0,1fr)_320px]",
+        )}
+      >
         <Card className="ring-neutral-200/80">
           <CardHeader>
             <CardTitle className="text-base">
@@ -175,11 +183,13 @@ export default async function LeavesPage({
                   <thead>
                     <tr className="border-y border-neutral-200 bg-neutral-50/60 text-left text-[11px] font-medium tracking-wider text-neutral-500 uppercase">
                       <th className="px-4 py-2.5">Employee</th>
-                      <th className="px-4 py-2.5">Type</th>
-                      <th className="px-4 py-2.5">Dates</th>
-                      <th className="px-4 py-2.5">Status</th>
-                      <th className="px-4 py-2.5">Submitted</th>
-                      <th className="px-4 py-2.5 text-right">
+                      <th className="px-3 py-2.5 whitespace-nowrap">Type</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap">Dates</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap">Status</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap">
+                        Submitted
+                      </th>
+                      <th className="px-4 py-2.5 text-right whitespace-nowrap">
                         {isAdmin ? "Actions" : ""}
                       </th>
                     </tr>
@@ -188,7 +198,7 @@ export default async function LeavesPage({
                     {requests.map((req) => (
                       <tr
                         key={req.id}
-                        className="transition hover:bg-neutral-50/60"
+                        className="align-middle transition hover:bg-neutral-50/60"
                       >
                         <td className="px-4 py-3">
                           <Link
@@ -203,19 +213,19 @@ export default async function LeavesPage({
                             </div>
                           ) : null}
                         </td>
-                        <td className="px-4 py-3 text-neutral-700">
+                        <td className="px-3 py-3 whitespace-nowrap text-neutral-700">
                           {LEAVE_TYPE_LABELS[req.leaveType]}
                         </td>
-                        <td className="px-4 py-3 text-neutral-700">
-                          {formatRange(req.startDate, req.endDate)}
+                        <td className="px-3 py-3 whitespace-nowrap text-neutral-700 tabular-nums">
+                          {formatRangeCompact(req.startDate, req.endDate)}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-3 whitespace-nowrap">
                           <StatusBadge status={req.status} />
                         </td>
-                        <td className="px-4 py-3 text-neutral-500">
+                        <td className="px-3 py-3 whitespace-nowrap text-neutral-500 tabular-nums">
                           {formatDate(req.createdAt)}
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-4 py-3 text-right whitespace-nowrap">
                           {isAdmin && req.status === "pending" ? (
                             <LeaveDecisionForm id={req.id} variant="inline" />
                           ) : (
