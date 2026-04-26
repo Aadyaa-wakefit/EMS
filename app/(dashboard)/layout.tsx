@@ -1,4 +1,3 @@
-// app/(dashboard)/layout.tsx
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "../components/Sidebar";
 
@@ -9,21 +8,15 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-slate-50">
-        {/* Sidebar */}
+      <div className="flex min-h-screen w-full bg-neutral-50">
         <AppSidebar />
 
-        {/* Right Content Area */}
         <main className="flex-1 overflow-hidden">
-          {/* Top Bar */}
-          <div className="flex h-16 items-center gap-4 border-b bg-white px-4 shadow-sm">
-            <SidebarTrigger />
-            <h1 className="text-lg font-semibold text-slate-800">
-              Employee Management System
-            </h1>
+          <div className="flex h-12 items-center gap-2 border-b border-neutral-200 bg-white px-3">
+            <SidebarTrigger className="text-neutral-500 hover:text-neutral-900" />
+            <span className="text-sm font-medium text-neutral-700">LMS</span>
           </div>
 
-          {/* Page Content */}
           <div className="p-6">{children}</div>
         </main>
       </div>

@@ -1,74 +1,116 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  CalendarDays,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  type LucideIcon,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { signOut, useSession } from "@/app/lib/auth-client";
+
+type NavLink = {
+  title: string;
+  href: string;
+  icon: LucideIcon;
+};
+
+const ADMIN_LINKS: NavLink[] = [
+  { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { title: "Leaves", href: "/admin/leaves", icon: CalendarDays },
+  { title: "Settings", href: "/admin/settings", icon: Settings },
+];
+
+const EMPLOYEE_LINKS: NavLink[] = [
+  { title: "Dashboard", href: "/employee", icon: LayoutDashboard },
+  { title: "Leaves", href: "/employee/leaves", icon: CalendarDays },
+];
+
+function getInitials(value: string | null | undefined): string {
+  if (!value) return "?";
+  const parts = value.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
+  return (parts[0]![0]! + parts[parts.length - 1]![0]!).toUpperCase();
+}
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session } = useSession();
+
   const isAdmin = pathname.startsWith("/admin");
+  const links = isAdmin ? ADMIN_LINKS : EMPLOYEE_LINKS;
 
-  const adminLinks = [
-    { title: "Dashboard", href: "/admin" },
-    { title: "Employees", href: "/admin/employees" },
-    { title: "Payroll", href: "/admin/payroll" },
-    { title: "Leaves", href: "/admin/leaves" },
-    { title: "Settings", href: "/admin/settings" },
-  ];
+  const user = session?.user;
+  const displayName = user?.name?.trim() || user?.email || "Signed out";
+  const displayEmail = user?.email ?? "";
+  const initials = getInitials(user?.name ?? user?.email);
 
-  const employeeLinks = [
-    { title: "Dashboard", href: "/employee" },
-    { title: "Attendance", href: "/employee/attendance" },
-    { title: "Leaves", href: "/employee/leaves" },
-    { title: "Payslips", href: "/employee/payslips" },
-    { title: "Profile", href: "/employee/profile" },
-  ];
-
-  const links = isAdmin ? adminLinks : employeeLinks;
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/auth");
+    router.refresh();
+  };
 
   return (
-    <Sidebar className="text-white [&_[data-sidebar=sidebar]]:bg-[#081028] [&_[data-sidebar=sidebar]]:border-r [&_[data-sidebar=sidebar]]:border-white/10">
-      {/* Header */}
-      <SidebarHeader className="px-5 py-6 border-b border-white/10 bg-[#081028]">
-        <h2 className="text-2xl font-bold text-white">Employee MS</h2>
-        <p className="mt-1 text-base text-slate-300">
-          {isAdmin ? "Admin Panel" : "Employee Panel"}
-        </p>
+    <Sidebar className="border-r border-neutral-200">
+      <SidebarHeader className="px-3 pt-3 pb-2">
+        <div className="flex items-center gap-2 px-2 py-1.5">
+          <div className="grid size-7 place-items-center rounded-md bg-neutral-900 text-[13px] font-semibold text-white">
+            L
+          </div>
+          <div className="leading-tight">
+            <div className="text-sm font-semibold text-neutral-900">LMS</div>
+            <div className="text-[11px] text-neutral-500">
+              {isAdmin ? "Admin" : "Employee"}
+            </div>
+          </div>
+        </div>
       </SidebarHeader>
 
-      {/* Content */}
-      <SidebarContent className="bg-[#081028] px-3 py-4">
+      <SidebarContent className="px-2">
         <SidebarGroup>
-          <p className="px-3 pb-3 text-sm font-bold tracking-widest text-slate-400 uppercase">
+          <SidebarGroupLabel className="px-2 text-[11px] font-medium tracking-wider text-neutral-400 uppercase">
             Navigation
-          </p>
-
-          <SidebarMenu className="space-y-2">
-            {links.map((item) => {
+          </SidebarGroupLabel>
+          <SidebarMenu>
+            {links.map(({ title, href, icon: Icon }) => {
               const active =
-                pathname === item.href ||
-                pathname.startsWith(item.href + "/");
-
+                pathname === href || pathname.startsWith(href + "/");
               return (
-                <SidebarMenuItem key={item.href}>
+                <SidebarMenuItem key={href}>
                   <SidebarMenuButton
                     asChild
-                    className={`h-14 rounded-xl px-4 text-lg font-semibold ${
-                      active
-                        ? "bg-white/15 text-white"
-                        : "text-slate-300 hover:bg-white/10 hover:text-white"
-                    }`}
+                    isActive={active}
+                    className="h-9 rounded-md px-2 text-sm text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 data-[active=true]:bg-neutral-100 data-[active=true]:font-medium data-[active=true]:text-neutral-900"
                   >
-                    <Link href={item.href}>{item.title}</Link>
+                    <Link href={href}>
+                      <Icon className="size-4" aria-hidden />
+                      <span>{title}</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               );
@@ -77,14 +119,44 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      {/* Footer */}
-      <SidebarFooter className="bg-[#081028] border-t border-white/10 p-4">
-        <Link
-          href="/"
-          className="flex h-12 items-center justify-center rounded-xl bg-red-500 text-lg font-semibold text-white hover:bg-red-600"
-        >
-          Logout
-        </Link>
+      <SidebarFooter className="border-t border-neutral-200 p-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            disabled={!user}
+            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300"
+          >
+            <Avatar size="sm">
+              <AvatarFallback className="bg-neutral-900 text-[11px] font-semibold text-white">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1 leading-tight">
+              <div className="truncate text-sm font-medium text-neutral-900">
+                {displayName}
+              </div>
+              {displayEmail ? (
+                <div className="truncate text-[11px] text-neutral-500">
+                  {displayEmail}
+                </div>
+              ) : null}
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="top"
+            align="start"
+            sideOffset={8}
+            className="w-56"
+          >
+            <DropdownMenuLabel className="text-[11px] font-medium tracking-wider text-neutral-400 uppercase">
+              Account
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={handleSignOut} className="gap-2">
+              <LogOut className="size-4" />
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarFooter>
     </Sidebar>
   );
