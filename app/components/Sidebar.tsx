@@ -39,13 +39,13 @@ type NavLink = {
 
 const ADMIN_LINKS: NavLink[] = [
   { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { title: "Leaves", href: "/admin/leaves", icon: CalendarDays },
+  { title: "Leaves", href: "/leaves", icon: CalendarDays },
   { title: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 const EMPLOYEE_LINKS: NavLink[] = [
   { title: "Dashboard", href: "/employee", icon: LayoutDashboard },
-  { title: "Leaves", href: "/employee/leaves", icon: CalendarDays },
+  { title: "Leaves", href: "/leaves", icon: CalendarDays },
 ];
 
 function getInitials(value: string | null | undefined): string {
@@ -61,7 +61,11 @@ export function AppSidebar() {
   const router = useRouter();
   const { data: session } = useSession();
 
-  const isAdmin = pathname.startsWith("/admin");
+  const sessionRole = (session?.user as { role?: string | null } | undefined)
+    ?.role;
+  const isAdmin = sessionRole
+    ? sessionRole === "admin"
+    : pathname.startsWith("/admin");
   const links = isAdmin ? ADMIN_LINKS : EMPLOYEE_LINKS;
 
   const user = session?.user;
@@ -96,7 +100,7 @@ export function AppSidebar() {
           <SidebarGroupLabel className="px-2 text-[11px] font-medium tracking-wider text-neutral-400 uppercase">
             Navigation
           </SidebarGroupLabel>
-          <SidebarMenu>
+          <SidebarMenu className="gap-1">
             {links.map(({ title, href, icon: Icon }) => {
               const active =
                 pathname === href || pathname.startsWith(href + "/");
